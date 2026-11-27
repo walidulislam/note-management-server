@@ -2,10 +2,21 @@ import { prisma } from "../../../lib/index.ts";
 import type { INote } from "./note.interface.ts";
 
 const createNote = async (data: INote) => {
+  const category = await prisma.category.findUnique({
+    where: {
+      id: data.categoryId,
+    },
+  });
+
+  if (!category) {
+    throw new Error("Category not found");
+  }
+
   const note = await prisma.note.create({
     data: {
       title: data.title,
       content: data.content,
+      categoryId: data.categoryId,
     },
   });
   return note;
@@ -29,7 +40,7 @@ const getSingle = async (id: string) => {
   return note;
 };
 
-const updateNote = async (id: string, data: INote) => {
+const updateNote = async (id: string, data: Partial<INote>) => {
   const update = await prisma.note.update({
     where: {
       id,
